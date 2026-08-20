@@ -123,6 +123,7 @@ model Event {
   waitlistCapacity     Int
   registrationDeadline DateTime
   status               EventStatus     @default(DRAFT)
+  noShowRate           Float           @default(0.4)
   createdById          String
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt

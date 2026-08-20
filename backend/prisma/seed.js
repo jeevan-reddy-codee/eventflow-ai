@@ -88,7 +88,7 @@ async function upsertVenue(venue) {
 async function upsertEvent(event, venue, organizer) {
   const data = {
     title: event.title,
-    description: `Category: ${event.category}. Seeded IIITA event for EventPulse demos.`,
+    description: `Category: ${event.category}. Seeded IIITA event for EventFlow AI demos.`,
     venueId: venue.id,
     startTime: event.startTime,
     endTime: event.endTime,

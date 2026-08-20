@@ -225,7 +225,7 @@ export function AccessPassCard({ event }: { event: EventRecord }) {
         <div className="p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-cyan-100/65">EventPulse Access</p>
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-cyan-100/65">EventFlow AI Access</p>
               <h2 className="mt-3 text-3xl font-black text-white">{event.title}</h2>
             </div>
             <StatusBeacon status={event.status === "closed" ? "waitlist" : "open"} label={event.status === "closed" ? "pending" : "valid"} />

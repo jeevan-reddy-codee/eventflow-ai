@@ -67,7 +67,7 @@ export async function request(path, options = {}) {
       throw error;
     }
 
-    throw new ApiClientError("Unable to reach EventPulse backend. Check your connection and API URL.");
+    throw new ApiClientError("Unable to reach EventFlow AI backend. Check your connection and API URL.");
   }
 }
 

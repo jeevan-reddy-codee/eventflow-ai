@@ -27,10 +27,39 @@ const {
 } = require("../../utils/socketEmitter");
 const { createNotification } = require("../notifications/notification.service");
 
-const REGISTRATION_LOCK_TTL_MS = 10_000;
+const STRATEGIES = {
+  CONSERVATIVE: "conservative",
+  NO_SHOW_ADJUSTED: "no-show-adjusted",
+  SMART: "smart",
+};
 
-function getRegistrationLockKey(eventId) {
-  return `lock:event:${eventId}:registration`;
+const DEFAULT_STRATEGY = STRATEGIES.SMART;
+
+function getStrategy(data, options = {}) {
+  return data.strategy || DEFAULT_STRATEGY;
+}
+
+function calculateMaxRegistrations(capacity, noShowRate) {
+  const expectedShowRate = 1 - noShowRate;
+  if (expectedShowRate <= 0) return capacity;
+  return Math.ceil(capacity / expectedShowRate);
+}
+
+function getRegistrationLimit(event, strategy) {
+  const capacity = event.capacity;
+  const noShowRate = Number(event.noShowRate) || 0.4;
+
+  switch (strategy) {
+    case STRATEGIES.CONSERVATIVE:
+      return capacity;
+
+    case STRATEGIES.NO_SHOW_ADJUSTED:
+      return calculateMaxRegistrations(capacity, noShowRate);
+
+    case STRATEGIES.SMART:
+    default:
+      return calculateMaxRegistrations(capacity, noShowRate);
+  }
 }
 
 function assertStudent(user) {
@@ -161,7 +190,7 @@ async function promoteNextWaitlistEntry(tx, event, seatNumber) {
   };
 }
 
-async function registerForEvent(eventId, user) {
+async function registerForEvent(eventId, user, strategy = DEFAULT_STRATEGY) {
   assertStudent(user);
 
   return withRedisLock(
@@ -171,6 +200,8 @@ async function registerForEvent(eventId, user) {
       const result = await prisma.$transaction(async (tx) => {
         const event = await getEventForRegistration(tx, eventId);
         assertRegistrationWindow(event);
+
+        const selectedStrategy = getStrategy(event, { strategy });
 
         const existingRegistration = await tx.registration.findUnique({
           where: {
@@ -185,7 +216,7 @@ async function registerForEvent(eventId, user) {
           throw new ApiError(409, "You are already registered for this event");
         }
 
-        const confirmedCount = await tx.registration.count({
+        const currentRegistrations = await tx.registration.count({
           where: {
             eventId,
             status: {
@@ -194,71 +225,79 @@ async function registerForEvent(eventId, user) {
           },
         });
 
-        if (confirmedCount < event.capacity) {
-          const occupiedSeats = await getOccupiedSeats(tx, eventId);
-          const seatNumber = getFirstAvailableSeat(event.venue, occupiedSeats);
+        const registrationLimit = getRegistrationLimit(event, selectedStrategy);
 
-          if (!seatNumber) {
-            throw new ApiError(409, "No seats are available");
-          }
+        if (currentRegistrations < registrationLimit) {
+          // Strategy allows registration (either conservative limit or no-show-adjusted)
+          const expectedShowRate = 1 - (event.noShowRate || 0.4);
 
-          const registration = existingRegistration
-            ? await tx.registration.update({
-                where: {
-                  id: existingRegistration.id,
-                },
-                data: {
-                  status: "CONFIRMED",
-                  seatNumber,
-                  qrTokenHash: createQrTokenHash(eventId, user.id),
-                  checkedInAt: null,
-                },
-              })
-            : await tx.registration.create({
-                data: {
-                  eventId,
+          if (currentRegistrations < event.capacity || currentRegistrations < registrationLimit) {
+            const occupiedSeats = await getOccupiedSeats(tx, eventId);
+            const seatNumber = getFirstAvailableSeat(event.venue, occupiedSeats);
+
+            if (!seatNumber) {
+              throw new ApiError(409, "No seats are available");
+            }
+
+            const registration = existingRegistration
+              ? await tx.registration.update({
+                  where: {
+                    id: existingRegistration.id,
+                  },
+                  data: {
+                    status: "CONFIRMED",
+                    seatNumber,
+                    qrTokenHash: createQrTokenHash(eventId, user.id),
+                    checkedInAt: null,
+                  },
+                })
+              : await tx.registration.create({
+                  data: {
+                    eventId,
+                    userId: user.id,
+                    status: "CONFIRMED",
+                    seatNumber,
+                    qrTokenHash: createQrTokenHash(eventId, user.id),
+                  },
+                });
+
+            await tx.eventLog.create({
+              data: {
+                eventId,
+                type: "REGISTRATION_CREATED",
+                message: "Registration created",
+                metadata: {
+                  registrationId: registration.id,
                   userId: user.id,
-                  status: "CONFIRMED",
                   seatNumber,
-                  qrTokenHash: createQrTokenHash(eventId, user.id),
                 },
-              });
+              },
+            });
 
-          await tx.eventLog.create({
-            data: {
-              eventId,
-              type: "REGISTRATION_CREATED",
-              message: "Registration created",
-              metadata: {
-                registrationId: registration.id,
+            await publishRegistrationCreated(
+              {
+                eventId,
                 userId: user.id,
-                seatNumber,
+                registrationId: registration.id,
+                metadata: {
+                  seatNumber: registration.seatNumber,
+                },
               },
-            },
-          });
+              { tx }
+            );
 
-          await publishRegistrationCreated(
-            {
-              eventId,
-              userId: user.id,
-              registrationId: registration.id,
-              metadata: {
-                seatNumber: registration.seatNumber,
+            return {
+              outcome: "CONFIRMED",
+              registration,
+              event: {
+                id: event.id,
+                title: event.title,
               },
-            },
-            { tx }
-          );
-
-          return {
-            outcome: "CONFIRMED",
-            registration,
-            event: {
-              id: event.id,
-              title: event.title,
-            },
-          };
+            };
+          }
         }
 
+        // Move to waitlist
         const waitlistCount = await tx.waitlistEntry.count({
           where: {
             eventId,

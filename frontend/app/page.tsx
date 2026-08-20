@@ -23,7 +23,7 @@ export default function Home() {
             <ControlChip tone="lime">Live campus operations grid</ControlChip>
           </div>
           <p className="text-6xl font-extrabold normal-case leading-none tracking-tight text-white sm:text-8xl lg:text-9xl">
-            EventPulse
+            EventFlow AI
           </p>
           <h1 className="mt-5 text-3xl font-black normal-case leading-tight tracking-wide text-cyan-100 sm:text-4xl lg:text-5xl">
             Live Campus Flow Intelligence

@@ -19,6 +19,7 @@ const initialForm = {
   endTime: "",
   capacity: "100",
   waitlistCapacity: "25",
+  noShowRate: "0.4",
   registrationDeadline: "",
   status: "OPEN",
 };
@@ -128,6 +129,7 @@ export function NewEventClient({ fallbackVenues }: { fallbackVenues: VenueRecord
           <div className="grid gap-5 sm:grid-cols-2">
             <FormInput label="Capacity" type="number" value={form.capacity} onChange={(event) => updateField("capacity", event.target.value)} min={1} required />
             <FormInput label="Waitlist capacity" type="number" value={form.waitlistCapacity} onChange={(event) => updateField("waitlistCapacity", event.target.value)} min={0} required />
+            <FormInput label="No-show rate" type="number" value={form.noShowRate} onChange={(event) => updateField("noShowRate", event.target.value)} min={0} max={1} step={0.1} required />
           </div>
         </GlassPanel>
       </div>

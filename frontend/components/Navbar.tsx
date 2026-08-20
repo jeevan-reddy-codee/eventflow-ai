@@ -34,8 +34,8 @@ export function Navbar() {
     <header className="sticky top-0 z-20 border-b border-cyan-200/10 bg-void/70 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3 font-black uppercase tracking-[0.18em]">
-          <span className="grid h-10 w-10 place-items-center rounded-xl border border-cyan-300/35 bg-cyan-300/10 text-cyan-100 shadow-glow">EP</span>
-          <span className="hidden text-white sm:inline">EventPulse</span>
+          <span className="grid h-10 w-10 place-items-center rounded-xl border border-cyan-300/35 bg-cyan-300/10 text-cyan-100 shadow-glow">EF</span>
+          <span className="hidden text-white sm:inline">EventFlow AI</span>
         </Link>
         <div className="hidden items-center gap-6 md:flex">
           {links.map((link) => (

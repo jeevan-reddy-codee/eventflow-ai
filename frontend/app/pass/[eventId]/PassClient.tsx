@@ -86,12 +86,12 @@ export function PassClient({ eventId }: { eventId: string }) {
         <div className="grid gap-0 md:grid-cols-[280px_1fr]">
           <div className="relative grid min-h-80 place-items-center border-b border-cyan-200/12 bg-cyan-300/8 p-8 md:border-b-0 md:border-r">
             <div className="absolute inset-8 rounded-full border border-cyan-300/18" style={{ animation: "beacon 2.4s ease-in-out infinite" }} />
-            <img src={pass.qrImage} alt="EventPulse QR pass" className="relative aspect-square w-52 rounded-2xl border border-white/10 bg-white p-3 shadow-glow" />
+            <img src={pass.qrImage} alt="EventFlow AI QR pass" className="relative aspect-square w-52 rounded-2xl border border-white/10 bg-white p-3 shadow-glow" />
           </div>
           <div className="p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.28em] text-cyan-100/65">EventPulse Access</p>
+                <p className="text-xs font-black uppercase tracking-[0.28em] text-cyan-100/65">EventFlow AI Access</p>
                 <h2 className="mt-3 text-3xl font-black text-white">{pass.event.title}</h2>
               </div>
               <StatusBeacon status={pass.registrationStatus === "CHECKED_IN" ? "live" : "open"} label={pass.registrationStatus} />

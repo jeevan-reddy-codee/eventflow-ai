@@ -37,7 +37,7 @@ export function ProtectedRoute({ children, roles }: { children: ReactNode; roles
           <StatusBeacon status="denied" label="ACCESS DENIED" />
           <h1 className="mt-5 text-3xl font-black uppercase tracking-wide text-white">Restricted operations lane</h1>
           <p className="mt-3 text-sm leading-6 text-white/60">
-            Your current role{user?.role ? ` (${user.role})` : ""} cannot enter this EventPulse control surface.
+            Your current role{user?.role ? ` (${user.role})` : ""} cannot enter this EventFlow AI control surface.
           </p>
           {user?.role && roleHome[user.role as Role] ? (
             <button

@@ -81,6 +81,7 @@ export function buildEventPayload(form) {
     waitlistCapacity: Number(form.waitlistCapacity),
     registrationDeadline: new Date(form.registrationDeadline).toISOString(),
     status: denormalizeStatus(form.status),
+    noShowRate: Number(form.noShowRate) || 0.4,
   };
 }
 

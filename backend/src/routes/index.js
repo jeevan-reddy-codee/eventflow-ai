@@ -21,7 +21,7 @@ router.use("/api/search", searchRoutes);
 router.use("/api/venues", venueRoutes);
 
 router.get("/health", (req, res) => {
-  return response.success(res, 200, "EventPulse backend running");
+  return response.success(res, 200, "EventFlow AI backend running");
 });
 
 router.get("/metrics", async (req, res, next) => {

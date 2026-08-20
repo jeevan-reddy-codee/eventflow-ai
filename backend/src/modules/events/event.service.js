@@ -1,3 +1,45 @@
+function calculateExpectedShowRate(noShowRate) {
+  return 1 - noShowRate;
+}
+
+function calculateExpectedAttendance(registeredAttendees, noShowRate) {
+  const expectedShowRate = calculateExpectedShowRate(noShowRate);
+  return Math.round(registeredAttendees * expectedShowRate);
+}
+
+function calculateExpectedNoShows(registeredAttendees, noShowRate) {
+  const expectedAttendance = calculateExpectedAttendance(registeredAttendees, noShowRate);
+  return registeredAttendees - expectedAttendance;
+}
+
+function calculateCapacityUtilization(registeredAttendees, noShowRate, capacity) {
+  const expectedAttendance = calculateExpectedAttendance(registeredAttendees, noShowRate);
+  return (expectedAttendance / capacity) * 100;
+}
+
+function calculateRiskLevel(expectedAttendance, capacity) {
+  if (expectedAttendance <= capacity * 0.80) {
+    return { level: "LOW", message: "Expected attendance is well within venue capacity." };
+  }
+
+  if (expectedAttendance <= capacity) {
+    return { level: "MODERATE", message: "Expected attendance approaches venue capacity." };
+  }
+
+  const overBy = Math.round(expectedAttendance - capacity);
+  return { level: "HIGH", message: `Expected attendance exceeds venue capacity by ${overBy} attendees.` };
+}
+
+function calculateActualNoShowRate(confirmedAttendees, checkedInAttendees) {
+  if (confirmedAttendees === 0) return 0;
+  return ((confirmedAttendees - checkedInAttendees) / confirmedAttendees) * 100;
+}
+
+function calculatePredictionDifference(expectedNoShows, actualNoShows) {
+  if (expectedNoShows === 0) return actualNoShows;
+  return Math.round(((actualNoShows - expectedNoShows) / expectedNoShows) * 100);
+}
+
 const prisma = require("../../config/prisma");
 const { ACTIONS, SUBJECTS, asSubject, authorize } = require("../../authorization/ability");
 const { hasOverlap } = require("../../dsa/intervalScheduler");
@@ -156,10 +198,25 @@ async function listEvents(query, user) {
     },
   });
 
-  return events.map((event) => ({
-    ...event,
-    createdBy: safeUser(event.createdBy),
-  }));
+  return events.map((event) => {
+    const noShowRate = event.noShowRate ?? 0.4;
+    const expectedShowRate = calculateExpectedShowRate(noShowRate);
+
+    const confirmedCount = event.registrations.filter(
+      (r) => r.status === "CONFIRMED" || r.status === "CHECKED_IN"
+    ).length;
+
+    const expectedAttendance = calculateExpectedAttendance(confirmedCount, noShowRate);
+    const expectedNoShows = calculateExpectedNoShows(confirmedCount, noShowRate);
+
+    return {
+      ...event,
+      createdBy: safeUser(event.createdBy),
+      expectedShowRate: expectedShowRate.toFixed(2),
+      expectedAttendance: Math.round(expectedAttendance),
+      expectedNoShows: Math.round(expectedNoShows),
+    };
+  });
 }
 
 async function getEventById(id) {
@@ -183,27 +240,38 @@ async function getEventById(id) {
 async function getEventDetails(id) {
   const event = await getEventById(id);
 
-  const [confirmedCount, waitlistCount, checkedInCount] = await Promise.all([
-    prisma.registration.count({
-      where: {
-        eventId: id,
-        status: {
-          in: ["CONFIRMED", "CHECKED_IN"],
-        },
+  const confirmedCount = await prisma.registration.count({
+    where: {
+      eventId: id,
+      status: {
+        in: ["CONFIRMED", "CHECKED_IN"],
       },
-    }),
-    prisma.waitlistEntry.count({
-      where: {
-        eventId: id,
-        status: "WAITING",
-      },
-    }),
-    prisma.checkIn.count({
-      where: {
-        eventId: id,
-      },
-    }),
-  ]);
+    },
+  });
+
+  const waitlistCount = await prisma.waitlistEntry.count({
+    where: {
+      eventId: id,
+      status: "WAITING",
+    },
+  });
+
+  const checkedInCount = await prisma.checkIn.count({
+    where: {
+      eventId: id,
+    },
+  });
+
+  const noShowRate = event.noShowRate ?? 0.4;
+  const expectedShowRate = calculateExpectedShowRate(noShowRate);
+  const expectedAttendance = calculateExpectedAttendance(confirmedCount, noShowRate);
+  const expectedNoShows = calculateExpectedNoShows(confirmedCount, noShowRate);
+  const capacityUtilization = calculateCapacityUtilization(
+    confirmedCount,
+    noShowRate,
+    event.capacity
+  );
+  const riskLevel = calculateRiskLevel(expectedAttendance, event.capacity);
 
   return {
     ...event,
@@ -211,7 +279,13 @@ async function getEventDetails(id) {
     confirmedCount,
     waitlistCount,
     checkedInCount,
+    expectedShowRate,
+    expectedAttendance,
+    expectedNoShows,
     remainingSeats: Math.max(event.capacity - confirmedCount, 0),
+    capacityUtilization: capacityUtilization.toFixed(1),
+    riskLevel: riskLevel.level,
+    riskMessage: riskLevel.message,
   };
 }
 

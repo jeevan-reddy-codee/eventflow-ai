@@ -168,7 +168,7 @@ function validateKafkaMessage(topic, payload, direction = "message") {
     throw new KafkaValidationError(topic, [
       {
         instancePath: "/topic",
-        message: "is not a supported EventPulse Kafka topic",
+        message: "is not a supported EventFlow AI Kafka topic",
         keyword: "topic",
         params: {
           topic,

@@ -1,6 +1,6 @@
-# EventPulse
+# EventFlow AI
 
-EventPulse is a full-stack campus event platform for capacity-aware registrations, waitlists, QR passes, live entry scanning, analytics, and real-time organizer/volunteer dashboards.
+EventFlow AI is a full-stack campus event platform for capacity-aware registrations, waitlists, QR passes, live entry scanning, analytics, and real-time organizer/volunteer dashboards.
 
 ## Structure
 
@@ -15,7 +15,7 @@ cd backend
 npm install
 cp .env.example .env
 npm run prisma:generate
-npm run prisma:migrate -- --name init_eventpulse_schema
+npm run prisma:migrate -- --name init_eventflowai_schema
 npm run seed
 npm run dev
 ```
@@ -133,7 +133,7 @@ The backend uses Helmet to apply security response headers before CORS and API r
 
 ## Auth Rate Limiting
 
-EventPulse uses Redis-backed fixed-window rate limits for sensitive routes. Login and registration are limited by IP and email to slow brute-force attempts. Authenticated limits protect QR scans, special entry, pass generation, notification mutations, and admin/organizer write routes. Responses include `RateLimit-Limit`, `RateLimit-Remaining`, and `RateLimit-Reset` headers.
+EventFlow AI uses Redis-backed fixed-window rate limits for sensitive routes. Login and registration are limited by IP and email to slow brute-force attempts. Authenticated limits protect QR scans, special entry, pass generation, notification mutations, and admin/organizer write routes. Responses include `RateLimit-Limit`, `RateLimit-Remaining`, and `RateLimit-Reset` headers.
 
 Default limits can be tuned with environment variables:
 
@@ -159,7 +159,7 @@ Admins can manage all resources. Organizers can create events and manage owned e
 
 ## Idempotency Keys
 
-High-risk write endpoints require an `Idempotency-Key` header so client retries do not repeat side effects. EventPulse stores the key, authenticated user, route, method, request fingerprint, response status/body, and expiry in PostgreSQL. Matching retries replay the original successful response with `Idempotency-Replayed: true`; reusing the same key with a different request returns `409`.
+High-risk write endpoints require an `Idempotency-Key` header so client retries do not repeat side effects. EventFlow AI stores the key, authenticated user, route, method, request fingerprint, response status/body, and expiry in PostgreSQL. Matching retries replay the original successful response with `Idempotency-Replayed: true`; reusing the same key with a different request returns `409`.
 
 Protected endpoints using idempotency:
 - `POST /api/events/:id/register`
@@ -234,7 +234,7 @@ PostgreSQL remains the source of truth. Redis counters can be rebuilt with datab
 
 ## In-App Notifications
 
-EventPulse stores per-user notifications for registration confirmations, waitlist joins and promotions, cancellations, check-ins, and crew access changes. Authenticated clients can fetch `/api/notifications`, read the navbar badge count through `/api/notifications/unread-count`, and mark one or all notifications as read. Socket.IO pushes `notification-created` and `notification-read` events to each authenticated user room so the badge and `/notifications` center update live.
+EventFlow AI stores per-user notifications for registration confirmations, waitlist joins and promotions, cancellations, check-ins, and crew access changes. Authenticated clients can fetch `/api/notifications`, read the navbar badge count through `/api/notifications/unread-count`, and mark one or all notifications as read. Socket.IO pushes `notification-created` and `notification-read` events to each authenticated user room so the badge and `/notifications` center update live.
 
 ## Kafka Usage
 
@@ -380,7 +380,7 @@ OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://localhost:4318/v1/traces
 OTEL_DIAG_LOGGING=false
 ```
 
-When `OTEL_ENABLED=true`, EventPulse auto-instruments Node HTTP/Express, PostgreSQL, Redis/ioredis, KafkaJS, Socket.IO, and Pino where supported by the OpenTelemetry auto-instrumentation package. The backend also creates manual spans for Kafka publish/consume operations, BullMQ job processing, and Socket.IO emits. Logs include request IDs and active trace/span IDs when a trace context exists.
+When `OTEL_ENABLED=true`, EventFlow AI auto-instruments Node HTTP/Express, PostgreSQL, Redis/ioredis, KafkaJS, Socket.IO, and Pino where supported by the OpenTelemetry auto-instrumentation package. The backend also creates manual spans for Kafka publish/consume operations, BullMQ job processing, and Socket.IO emits. Logs include request IDs and active trace/span IDs when a trace context exists.
 
 For local traces, start an OTLP-compatible collector and set `OTEL_ENABLED=true` plus `OTEL_EXPORTER_OTLP_ENDPOINT`. Without an endpoint, tracing can still be enabled for local context propagation, but spans are not exported.
 
@@ -438,7 +438,7 @@ NEXT_PUBLIC_API_URL=http://localhost:5000
 NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
 ```
 
-The frontend keeps the futuristic EventPulse spatial operations UI while integrating with the backend APIs. Login and registration store the JWT and user profile in local storage, attach `Authorization: Bearer <token>` to API requests, and update navigation by role.
+The frontend keeps the futuristic EventFlow AI UI while integrating with the backend APIs. Login and registration store the JWT and user profile in local storage, attach `Authorization: Bearer <token>` to API requests, and update navigation by role.
 
 Integrated pages:
 - `/login`

@@ -32,7 +32,7 @@ const httpRequestsTotal = new client.Counter({
 
 const domainEventsTotal = new client.Counter({
   name: "eventpulse_domain_events_total",
-  help: "Domain events emitted by EventPulse services.",
+  help: "Domain events emitted by EventFlow AI services.",
   labelNames: ["event"],
   registers: [register],
 });

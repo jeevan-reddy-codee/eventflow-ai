@@ -46,7 +46,7 @@ export default function LoginPage() {
         <div className="max-w-2xl">
           <ControlChip>Identity Access</ControlChip>
           <h1 className="mt-6 text-6xl font-black uppercase leading-none tracking-wide text-white">Enter the campus flow grid.</h1>
-          <p className="mt-6 text-lg leading-8 text-white/58">Choose a demo role and route into the right EventPulse operations surface.</p>
+          <p className="mt-6 text-lg leading-8 text-white/58">Choose a demo role and route into the right EventFlow AI operations surface.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             {roles.map((item, index) => (
               <div
@@ -74,7 +74,7 @@ export default function LoginPage() {
         <GlassPanel className="w-full max-w-md">
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-cyan-100/60">EventPulse Access</p>
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-cyan-100/60">EventFlow AI Access</p>
               <h1 className="mt-3 text-3xl font-black uppercase text-white">Login</h1>
             </div>
             <StatusBeacon status="open" label={role} />

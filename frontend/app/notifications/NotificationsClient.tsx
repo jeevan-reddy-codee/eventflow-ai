@@ -150,7 +150,7 @@ export function NotificationsClient() {
       ) : null}
 
       {!isLoading && filteredNotifications.length === 0 ? (
-        <EmptyState title="No notifications">Your EventPulse updates will appear here.</EmptyState>
+        <EmptyState title="No notifications">Your EventFlow AI updates will appear here.</EmptyState>
       ) : null}
 
       <div className="grid gap-3">

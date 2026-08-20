@@ -13,12 +13,12 @@ const server = http.createServer(app);
 initSocketServer(server);
 
 server.listen(env.PORT, () => {
-  logger.info({ port: env.PORT }, "EventPulse backend listening");
+  logger.info({ port: env.PORT }, "EventFlow AI backend listening");
 });
 
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, async () => {
-    logger.info({ signal }, "EventPulse backend shutdown requested");
+    logger.info({ signal }, "EventFlow AI backend shutdown requested");
     await shutdownTracing().catch((error) => logger.error({ error }, "OpenTelemetry shutdown failed"));
     process.exit(0);
   });

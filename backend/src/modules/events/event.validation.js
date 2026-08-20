@@ -23,12 +23,13 @@ function parseDate(value, fieldName) {
   return date;
 }
 
-function parseInteger(value, fieldName, options = {}) {
+function parseFloatValue(value, fieldName, options = {}) {
   const number = Number(value);
-  const minimum = options.minimum ?? 1;
+  const minimum = options.minimum ?? 0;
+  const maximum = options.maximum ?? 1;
 
-  if (!Number.isInteger(number) || number < minimum) {
-    throw new ApiError(400, `${fieldName} must be greater than or equal to ${minimum}`);
+  if (Number.isNaN(number) || number < minimum || number > maximum) {
+    throw new ApiError(400, `${fieldName} must be between ${minimum} and ${maximum}`);
   }
 
   return number;
@@ -76,6 +77,13 @@ function validateEventInput(body, options = {}) {
   if (!isPartial || hasOwn(body, "waitlistCapacity")) {
     data.waitlistCapacity = parseInteger(body.waitlistCapacity, "waitlistCapacity", {
       minimum: 0,
+    });
+  }
+
+  if (!isPartial || hasOwn(body, "noShowRate")) {
+    data.noShowRate = parseFloatValue(body.noShowRate, "noShowRate", {
+      minimum: 0,
+      maximum: 1,
     });
   }
 

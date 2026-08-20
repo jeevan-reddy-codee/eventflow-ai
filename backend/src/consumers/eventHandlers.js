@@ -75,7 +75,7 @@ async function writeAuditLog(topic, payload, context) {
   });
 }
 
-async function handleEventPulseTopic(payload, context) {
+async function handleEventFlowAITopic(payload, context) {
   const topic = context.topic;
   const eventId = requireString(payload.eventId, "eventId");
 
@@ -100,16 +100,16 @@ async function handleScanFailed(payload, context) {
 
 function buildTopicHandlers() {
   return {
-    [TOPICS.REGISTRATION_CREATED]: handleEventPulseTopic,
-    [TOPICS.WAITLIST_JOINED]: handleEventPulseTopic,
-    [TOPICS.WAITLIST_PROMOTED]: handleEventPulseTopic,
-    [TOPICS.REGISTRATION_CANCELLED]: handleEventPulseTopic,
-    [TOPICS.CHECKIN_COMPLETED]: handleEventPulseTopic,
-    [TOPICS.NO_SHOW_RELEASED]: handleEventPulseTopic,
-    [TOPICS.CREW_ACCESS_GRANTED]: handleEventPulseTopic,
-    [TOPICS.CREW_ACCESS_UPDATED]: handleEventPulseTopic,
-    [TOPICS.CREW_ACCESS_REVOKED]: handleEventPulseTopic,
-    [TOPICS.CREW_SPECIAL_ENTRY_USED]: handleEventPulseTopic,
+    [TOPICS.REGISTRATION_CREATED]: handleEventFlowAITopic,
+    [TOPICS.WAITLIST_JOINED]: handleEventFlowAITopic,
+    [TOPICS.WAITLIST_PROMOTED]: handleEventFlowAITopic,
+    [TOPICS.REGISTRATION_CANCELLED]: handleEventFlowAITopic,
+    [TOPICS.CHECKIN_COMPLETED]: handleEventFlowAITopic,
+    [TOPICS.NO_SHOW_RELEASED]: handleEventFlowAITopic,
+    [TOPICS.CREW_ACCESS_GRANTED]: handleEventFlowAITopic,
+    [TOPICS.CREW_ACCESS_UPDATED]: handleEventFlowAITopic,
+    [TOPICS.CREW_ACCESS_REVOKED]: handleEventFlowAITopic,
+    [TOPICS.CREW_SPECIAL_ENTRY_USED]: handleEventFlowAITopic,
     [TOPICS.SCAN_FAILED]: handleScanFailed,
   };
 }
